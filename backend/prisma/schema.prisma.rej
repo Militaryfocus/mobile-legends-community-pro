@@ -1,0 +1,44 @@
+--- schema.prisma
++++ schema.prisma
+@@ -92,9 +92,11 @@ model Post {
+   media      Media[]
+   tags       PostTag[]
+ 
+-  @@index([authorId])
+-  @@index([type])
+-  @@index([createdAt])
++  @@index([authorId, status, createdAt])
++  @@index([status, type, createdAt])
++  @@index([authorId, status])
++  @@index([status, createdAt])
++  @@index([type, status, createdAt])
+ }
+ 
+ model PostTag {
+@@ -185,8 +187,10 @@ model Follow {
+   following   User   @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+   createdAt   DateTime @default(now())
+ 
+-  @@unique([followerId, followingId])
+-  @@index([followerId])
++  @@unique([followerId, followingId])  
++  @@index([followerId, createdAt])
++  @@index([followingId, createdAt])
++  @@index([followerId, followingId, createdAt])
+   @@index([followingId])
+ }
+ 
+@@ -278,9 +282,10 @@ model Notification {
+   createdAt DateTime @default(now())
+   isRead    Boolean  @default(false)
+ 
+-  @@index([userId])
+-  @@index([isRead])
+-  @@index([createdAt])
++  @@index([userId, isRead, createdAt])
++  @@index([userId, createdAt])
++  @@index([isRead, createdAt])
++  @@index([type, createdAt])
+ }
+ 
+ model PasswordResetToken {

@@ -1,0 +1,8 @@
+🚀 Server running on port 3001
+📊 Environment: development
+🔗 Health check: http://localhost:3001/api/health
+GET /api/heroes 200 - 107ms
+GET /api/heroes/cmh7946qe00019uwtngs78w88 200 - 5ms
+GET /api/heroes/role/ASSASSIN 200 - 5ms
+GET /api/heroes/search?q=miya 200 - 5ms
+GET /api/heroes/meta 200 - 20ms

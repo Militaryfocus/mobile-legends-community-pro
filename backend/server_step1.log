@@ -1,0 +1,9 @@
+🚀 Server running on port 3001
+📊 Environment: development
+🔗 Health check: http://localhost:3001/api/health
+STEP1: getAllHeroes with simple Prisma
+STEP1: Success, found 6 heroes
+GET /api/heroes 200 - 82ms
+STEP1: getHeroById with simple Prisma: cmh7946qe00019uwtngs78w88
+STEP1: Success, hero: Miya
+GET /api/heroes/cmh7946qe00019uwtngs78w88 200 - 6ms

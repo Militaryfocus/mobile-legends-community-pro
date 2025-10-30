@@ -1,0 +1,13 @@
+model Hero {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  title       String
+  role        HeroRole
+  difficulty  Int?     @default(1) // Добавляем сложность (1-10)
+  description String?
+  abilities   Ability[]
+  builds      Build[]
+  matchStats  PlayerStats[]
+
+  @@map("heroes")
+}

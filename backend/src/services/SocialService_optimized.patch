@@ -1,0 +1,103 @@
+--- a/src/services/SocialService.ts
++++ b/src/services/SocialService.ts
+@@ -514,24 +514,40 @@
+   }
+ 
+   // Подписки
+-  async getUserFollowers(userId: string) {
+-    return prisma.follow.findMany({
++  async getUserFollowers(userId: string, page: number = 1, limit: number = 50) {
++    const skip = (page - 1) * limit;
++    
++    const [follows, total] = await Promise.all([
++      prisma.follow.findMany({
++        where: { followingId: userId },
++        include: {
++          follower: {
++            select: {
++              id: true,
++              username: true,
++              avatar: true
++            }
++          }
++        },
++        orderBy: { createdAt: 'desc' },
++        skip,
++        take: limit
++      }),
++      prisma.follow.count({
++        where: { followingId: userId }
++      })
++    ]);
++
++    return {
++      followers: follows.map(f => f.follower),
++      pagination: {
++        page,
++        limit,
++        total,
++        pages: Math.ceil(total / limit)
++      }
++    };
++  }
++
++  async getUserFollowing(userId: string, page: number = 1, limit: number = 50) {
++    const skip = (page - 1) * limit;
++    
++    const [follows, total] = await Promise.all([
++      prisma.follow.findMany({
++        where: { followerId: userId },
++        include: {
++          following: {
++            select: {
++              id: true,
++              username: true,
++              avatar: true
++            }
++          }
++        },
++        orderBy: { createdAt: 'desc' },
++        skip,
++        take: limit
++      }),
++      prisma.follow.count({
++        where: { followerId: userId }
++      })
++    ]);
++
++    return {
++      following: follows.map(f => f.following),
++      pagination: {
++        page,
++        limit,
++        total,
++        pages: Math.ceil(total / limit)
++      }
++    };
++  }
++
++  async getUserFollowers_OLD(userId: string) {
++    return await this.getUserFollowers(userId, 1, 50);
++  }
++
++  async getUserFollowing_OLD(userId: string) {
++    return await this.getUserFollowing(userId, 1, 50);
++  }
++
++  async getUserFollowers_OLD(userId: string) {
++    return prisma.follow.findMany({
+       where: { followingId: userId },
+       include: {
+         follower: {
+@@ -543,8 +559,8 @@
+       }
+     });
+   }
+ 
+-  async getUserFollowing(userId: string) {
+-    return prisma.follow.findMany({
++  async getUserFollowing_OLD(userId: string) {
++    return prisma.follow.findMany({
+       where: { followerId: userId },
+       include: {
+         following: {

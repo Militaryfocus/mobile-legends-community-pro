@@ -1,0 +1,556 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String        @id @default(cuid())
+  email               String        @unique
+  passwordHash        String?
+  username            String        @unique
+  role                UserRole      @default(USER)
+  avatar              String?
+  isVerified          Boolean       @default(false)
+  gameAccountVerified Boolean       @default(false)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  sessions            Session[]
+  oauthAccounts       OAuthAccount[]
+  posts               Post[]
+  builds              Build[]
+  matchStats          PlayerStats[]
+  createdTeams        Team[]        @relation("TeamLeader")
+  teamMembers         TeamMember[]
+  notifications       Notification[] @relation("NotificationUser")
+  actorNotifications  Notification[] @relation("NotificationActor")
+  buildVotes          BuildVote[]
+  buildComments       BuildComment[]
+  postComments        Comment[]
+  postLikes           Like[]
+  media               Media[]
+  followers           Follow[]      @relation("Follower")
+  following           Follow[]      @relation("Following")
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model OAuthAccount {
+  id           String   @id @default(cuid())
+  provider     String
+  providerId   String
+  accessToken  String?
+  refreshToken String?
+  expiresAt    DateTime?
+  userId       String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@map("oauth_accounts")
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  type        PostType
+  status      PostStatus @default(PUBLISHED)
+  viewCount   Int      @default(0)
+  likeCount   Int      @default(0)
+  commentCount Int     @default(0)
+
+  authorId    String
+  heroId      String?
+  buildId     String?
+
+  author      User     @relation(fields: [authorId], references: [id])
+  hero        Hero?    @relation(fields: [heroId], references: [id])
+  build       Build?   @relation(fields: [buildId], references: [id])
+  tags        PostTag[]
+  comments    Comment[]
+  likes       Like[]
+  media       Media[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("posts")
+  @@index([authorId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model PostTag {
+  id     String @id @default(cuid())
+  postId String
+  name   String
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, name])
+  @@map("post_tags")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  status    CommentStatus @default(ACTIVE)
+
+  authorId  String
+  postId    String?
+  parentId  String?
+
+  author    User     @relation(fields: [authorId], references: [id])
+  post      Post?    @relation(fields: [postId], references: [id])
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  likes     Like[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("comments")
+  @@index([postId])
+  @@index([authorId])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  type      LikeType
+
+  userId    String
+  postId    String?
+  commentId String?
+  buildId   String?
+
+  user      User    @relation(fields: [userId], references: [id])
+  post      Post?   @relation(fields: [postId], references: [id])
+  comment   Comment? @relation(fields: [commentId], references: [id])
+  build     Build?  @relation(fields: [buildId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId, commentId, buildId])
+  @@map("likes")
+  @@index([userId])
+  @@index([postId])
+  @@index([commentId])
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  url       String
+  type      MediaType
+  filename  String
+  size      Int
+  mimeType  String
+
+  postId    String?
+  userId    String
+
+  post      Post? @relation(fields: [postId], references: [id])
+  user      User  @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("media")
+}
+
+model Follow {
+  id           String   @id @default(cuid())
+  followerId   String
+  followingId  String
+
+  follower    User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Hero {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  title       String
+  role        HeroRole
+  difficulty  Int?     @default(1)
+  description String?
+  abilities   Ability[]
+  builds      Build[]
+  matchStats  PlayerStats[]
+  posts       Post[]
+
+  @@map("heroes")
+}
+
+model Ability {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  heroId      String
+
+  hero Hero @relation(fields: [heroId], references: [id], onDelete: Cascade)
+
+  @@map("abilities")
+}
+
+model PlayerStats {
+  id        String   @id @default(cuid())
+  userId    String
+  heroId    String
+  matches   Int      @default(0)
+  wins      Int      @default(0)
+  kills     Int      @default(0)
+  deaths    Int      @default(0)
+  assists   Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hero Hero @relation(fields: [heroId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, heroId])
+  @@map("player_stats")
+}
+
+model Team {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  description String?
+  leaderId    String
+  createdAt   DateTime     @default(now())
+
+  leader  User         @relation("TeamLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  members TeamMember[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id     String   @id @default(cuid())
+  teamId String
+  userId String
+  role   TeamRole @default(MEMBER)
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      NotificationType
+  title     String
+  content   String?
+  isRead    Boolean  @default(false)
+  data      Json?
+
+  userId    String
+  actorId   String?
+
+  user      User     @relation("NotificationUser", fields: [userId], references: [id], onDelete: Cascade)
+  actor     User?    @relation("NotificationActor", fields: [actorId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("email_verifications")
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("password_resets")
+}
+
+model Item {
+  id          String   @id
+  name        String
+  description String?
+  type        ItemType
+  price       Int?
+  stats       Json?
+  iconUrl     String?
+  tier        ItemTier @default(BASIC)
+
+  builds ItemInBuild[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("items")
+}
+
+model Emblem {
+  id          String   @id
+  name        String
+  type        EmblemType
+  description String?
+  iconUrl     String?
+  
+  builds EmblemInBuild[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("emblems")
+}
+
+model Spell {
+  id          String   @id
+  name        String
+  description String?
+  cooldown    Int?
+  iconUrl     String?
+
+  buildsAsSpell1 Build[] @relation("BuildSpell1")
+  buildsAsSpell2 Build[] @relation("BuildSpell2")
+
+  @@map("spells")
+}
+
+model Build {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isPublic    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  winRate     Float?   @default(0)
+  popularity  Float?   @default(0)
+  playstyle   Playstyle
+
+  heroId    String
+  authorId  String
+  spell1Id  String?
+  spell2Id  String?
+
+  hero      Hero     @relation(fields: [heroId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id])
+  spell1    Spell?   @relation("BuildSpell1", fields: [spell1Id], references: [id])
+  spell2    Spell?   @relation("BuildSpell2", fields: [spell2Id], references: [id])
+  items     ItemInBuild[]
+  emblems   EmblemInBuild[]
+  votes     BuildVote[]
+  comments  BuildComment[]
+  posts     Post[]
+  likes     Like[]
+
+  viewCount  Int     @default(0)
+  likeCount  Int     @default(0)
+  copyCount  Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("builds")
+  @@index([heroId])
+  @@index([authorId])
+  @@index([winRate])
+  @@index([popularity])
+}
+
+model ItemInBuild {
+  id      String @id @default(cuid())
+  buildId String
+  itemId  String
+  order   Int
+
+  build Build @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  item  Item  @relation(fields: [itemId], references: [id])
+
+  @@unique([buildId, order])
+  @@map("item_in_build")
+}
+
+model EmblemInBuild {
+  id       String @id @default(cuid())
+  buildId  String
+  emblemId String
+  setup    Json?
+
+  build  Build  @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  emblem Emblem @relation(fields: [emblemId], references: [id])
+
+  @@map("emblem_in_build")
+}
+
+model BuildVote {
+  id      String   @id @default(cuid())
+  buildId String
+  userId  String
+  type    VoteType
+  value   Int
+
+  build Build @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([buildId, userId])
+  @@map("build_votes")
+}
+
+model BuildComment {
+  id        String   @id @default(cuid())
+  content   String
+  buildId   String
+  authorId  String
+  parentId  String?
+
+  build    Build         @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  author   User          @relation(fields: [authorId], references: [id])
+  parent   BuildComment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  BuildComment[] @relation("CommentReplies")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("build_comments")
+}
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+enum HeroRole {
+  TANK
+  FIGHTER
+  ASSASSIN
+  MAGE
+  MARKSMAN
+  SUPPORT
+}
+
+enum TeamRole {
+  MEMBER
+  CAPTAIN
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  SUCCESS
+  ERROR
+  LIKE_POST
+  LIKE_COMMENT
+  COMMENT_POST
+  REPLY_COMMENT
+  NEW_FOLLOWER
+  MENTION
+  SYSTEM
+  BUILD_FEATURED
+}
+
+enum ItemType {
+  ATTACK
+  DEFENSE
+  MAGIC
+  MOVEMENT
+  JUNGLE
+}
+
+enum ItemTier {
+  BASIC
+  ADVANCED
+  LEGENDARY
+}
+
+enum EmblemType {
+  COMMON
+  ASSASSIN
+  MAGE
+  MARKSMAN
+  SUPPORT
+  TANK
+  FIGHTER
+  JUNGLE
+}
+
+enum Playstyle {
+  AGGRESSIVE
+  DEFENSIVE
+  BALANCED
+  POKE
+  BURST
+  SUSTAIN
+}
+
+enum VoteType {
+  LIKE
+  DISLIKE
+}
+
+enum PostType {
+  GUIDE
+  DISCUSSION
+  NEWS
+  HIGHLIGHT
+  QUESTION
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  DELETED
+}
+
+enum CommentStatus {
+  ACTIVE
+  DELETED
+  HIDDEN
+}
+
+enum LikeType {
+  LIKE
+  LOVE
+  HAHA
+  WOW
+  SAD
+  ANGRY
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  GIF
+  FILE
+}

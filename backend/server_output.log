@@ -1,0 +1,11 @@
+
+> mlbb-community-backend@1.0.0 start
+> node dist/server.js
+
+🚀 Server running on port 3001
+📊 Environment: development
+🔗 Health check: http://localhost:3001/api/health
+GET /api/health 200 - 5ms
+GET /api/social/posts?page=1&limit=2 200 - 74ms
+GET /api/social/users/cmh7a03xz00009usppsypqlw9/followers?page=1&limit=2 200 - 4ms
+GET /api/social/users/cmh7a03xz00009usppsypqlw9/stats 200 - 18ms

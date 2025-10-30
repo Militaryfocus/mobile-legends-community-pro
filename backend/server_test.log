@@ -1,0 +1,12 @@
+🚀 Server running on port 3001
+📊 Environment: development
+🔗 Health check: http://localhost:3001/api/health
+MINIMAL: getAllHeroes called
+GET /api/heroes 200 - 5ms
+MINIMAL: getHeroById called: cmh7946qe00019uwtngs78w88
+GET /api/heroes/cmh7946qe00019uwtngs78w88 200 - 1ms
+MINIMAL: getHeroesByRole called: ASSASSIN
+GET /api/heroes/role/ASSASSIN 200 - 1ms
+MINIMAL: searchHeroes called: miya
+GET /api/heroes/search?q=miya 200 - 1ms
+GET /api/heroes/meta 200 - 2ms

@@ -1,0 +1,6 @@
+🚀 Server running on port 3001
+📊 Environment: development
+🔗 Health check: http://localhost:3001/api/health
+STEP3: getHeroById with COMPLEX includes
+STEP3: Success with complex includes, hero: Miya
+GET /api/heroes/cmh7946qe00019uwtngs78w88 200 - 80ms

@@ -1,0 +1,53 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    container_name: mlbb_postgres
+    environment:
+      POSTGRES_DB: mlbb_community
+      POSTGRES_USER: developer
+      POSTGRES_PASSWORD: dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mlbb_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: mlbb_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - mlbb_network
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: mlbb_backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://developer:dev_password@postgres:5432/mlbb_community
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=dev_jwt_secret_2024
+      - PORT=3001
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - mlbb_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  mlbb_network:
+    driver: bridge

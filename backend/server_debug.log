@@ -1,0 +1,6 @@
+🚀 Server running on port 3001
+📊 Environment: development
+🔗 Health check: http://localhost:3001/api/health
+GET /api/health 200 - 5ms
+GET /api/heroes/meta 200 - 98ms
+GET /api/social/posts?page=1&limit=1 200 - 83ms

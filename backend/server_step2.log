@@ -1,0 +1,26 @@
+🚀 Server running on port 3001
+📊 Environment: development
+🔗 Health check: http://localhost:3001/api/health
+STEP2: getAllHeroes with include abilities
+STEP2: Success with abilities, found 6 heroes
+GET /api/heroes 200 - 78ms
+STEP2: getHeroById with simple include: cmh7946qe00019uwtngs78w88
+STEP2: Success with abilities, hero: Miya
+GET /api/heroes/cmh7946qe00019uwtngs78w88 200 - 5ms
+node[121626]: ../src/node.cc:701:void node::ResetStdio(): Assertion `!(err != 0) || (err == -1 && (*__errno_location ()) == 1)' failed.
+ 1: 0x7d7f9040633c node::Abort() [/lib/x86_64-linux-gnu/libnode.so.109]
+ 2: 0x7d7f904063cb  [/lib/x86_64-linux-gnu/libnode.so.109]
+ 3: 0x7d7f903b88c6  [/lib/x86_64-linux-gnu/libnode.so.109]
+ 4: 0x7d7f903b89c4 node::SignalExit(int, siginfo_t*, void*) [/lib/x86_64-linux-gnu/libnode.so.109]
+ 5: 0x7d7f8f645330  [/lib/x86_64-linux-gnu/libc.so.6]
+ 6: 0x7d7f8f729f10 epoll_pwait [/lib/x86_64-linux-gnu/libc.so.6]
+ 7: 0x7d7f928d49fa  [/lib/x86_64-linux-gnu/libuv.so.1]
+ 8: 0x7d7f928bbce8 uv_run [/lib/x86_64-linux-gnu/libuv.so.1]
+ 9: 0x7d7f903286d3 node::SpinEventLoop(node::Environment*) [/lib/x86_64-linux-gnu/libnode.so.109]
+10: 0x7d7f90453dab node::NodeMainInstance::Run(int*, node::Environment*) [/lib/x86_64-linux-gnu/libnode.so.109]
+11: 0x7d7f90454213 node::NodeMainInstance::Run() [/lib/x86_64-linux-gnu/libnode.so.109]
+12: 0x7d7f903ba36a node::LoadSnapshotDataAndRun(node::SnapshotData const**, node::InitializationResult const*) [/lib/x86_64-linux-gnu/libnode.so.109]
+13: 0x7d7f903be5d5 node::Start(int, char**) [/lib/x86_64-linux-gnu/libnode.so.109]
+14: 0x7d7f8f62a1ca  [/lib/x86_64-linux-gnu/libc.so.6]
+15: 0x7d7f8f62a28b __libc_start_main [/lib/x86_64-linux-gnu/libc.so.6]
+16: 0x58f2345c8035 _start [node]
